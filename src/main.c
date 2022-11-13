@@ -1,31 +1,120 @@
-#include "listen.h"
+#include "yinyang.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
-static void print_theme_name(const char *name, unsigned flags) {
-  printf("%s\n", name);
+static void print_theme_name(const char *name, unsigned flags,
+                             struct options *opts) {
+  if ((flags & ThemeFlagInitialValue) && !(opts->print & PrintFlagNow)) {
+    return;
+  }
+
+  if (opts->argc) {
+    fputs("TODO: ", stdout);
+    for (int i = 0; i < opts->argc; ++i) {
+      fputs(opts->argv[i], stdout);
+      fputc(' ', stdout);
+    }
+    fputc('\n', stdout);
+  }
+
+  switch (opts->print & (PrintFlagAppTheme | PrintFlagSystemTheme)) {
+  case PrintFlagAppTheme:
+    if (flags & ThemeFlagAppDark) {
+      if (opts->print & PrintFlagStandardNames) {
+        puts("dark");
+      } else {
+        puts(name);
+      }
+    } else if (flags & ThemeFlagAppLight) {
+      if (opts->print & PrintFlagStandardNames) {
+        puts("light");
+      } else {
+        puts(name);
+      }
+#ifndef NDEBUG
+    } else {
+      fprintf(stderr, "App theme flag not present.");
+#endif
+    }
+    break;
+
+  case PrintFlagSystemTheme:
+    if (flags & ThemeFlagSystemDark) {
+      if (opts->print & PrintFlagStandardNames) {
+        puts("dark");
+      } else {
+        puts(name);
+      }
+    } else if (flags & ThemeFlagSystemLight) {
+      if (opts->print & PrintFlagStandardNames) {
+        puts("light");
+      } else {
+        puts(name);
+      }
+#ifndef NDEBUG
+    } else {
+      fprintf(stderr, "System theme flag not present.");
+#endif
+    }
+    break;
+
+  default: // Both flags
+    if (flags & ThemeFlagSystemDark) {
+      if (opts->print & PrintFlagStandardNames) {
+        puts("sys:dark");
+      } else {
+        printf("sys:%s\n", name);
+      }
+    } else if (flags & ThemeFlagSystemLight) {
+      if (opts->print & PrintFlagStandardNames) {
+        puts("sys:light");
+      } else {
+        printf("sys:%s\n", name);
+      }
+#ifndef NDEBUG
+    } else {
+      fprintf(stderr, "App theme flag not present.");
+#endif
+    }
+
+    if (flags & ThemeFlagAppDark) {
+      if (opts->print & PrintFlagStandardNames) {
+        puts("app:dark");
+      } else {
+        printf("app:%s\n", name);
+      }
+    } else if (flags & ThemeFlagAppLight) {
+      if (opts->print & PrintFlagStandardNames) {
+        puts("app:light");
+      } else {
+        printf("app:%s\n", name);
+      }
+#ifndef NDEBUG
+    } else {
+      fprintf(stderr, "App theme flag not present.");
+#endif
+    }
+    break;
+  }
 }
 
 static void show_help() {
-  fprintf(stderr, "help!\n");
-  fprintf(stderr, "-h | --help\n-l | --listen\n-s | --system\n"
-                  "-a | --app\n-n | --now\n-x | --exec\n");
+  fprintf(stderr, "Usage: yinyang [options] [-x | --exec command...]\n\n"
+          "Options:\n"
+          "  -h | --help     Show this message.\n"
+          "  -n | --now      Print the current theme name.\n"
+          "  -l | --listen   Listen for system theme changes.\n"
+          "  -s | --system   Print the system theme.\n"
+          "  -a | --app      Print the app theme.\n"
+          "  -S | --standard-names   Use standard names 'dark'/'light'"
+                                    " instead of system specific names.\n"
+          "  -x | --exec     Run a command when a theme change occurs."
+                            " Arguments $system and $app are substituted with"
+                            " the theme name.\n\n"
+          "If no options are specified, the default behavior is as if the"
+          " arguments '-n', '-a', and '-S' were passed.\n");
 }
-
-enum print_flags {
-  print_sys = 1,
-  print_app = 2,
-  print_now = 4,
-};
-
-struct options {
-  int print;
-  int listen;
-  int argcap;
-  int argc;
-  char **argv;
-};
 
 static void set_exec(const char *cmd, struct options *opts) {
   if (opts->argc == opts->argcap) {
@@ -48,11 +137,13 @@ static int long_arg(int argc, char *argv[], int *argn, struct options *opts) {
   } else if (!strcmp(arg, "listen")) {
     opts->listen = 1;
   } else if (!strcmp(arg, "system")) {
-    opts->print |= print_sys;
+    opts->print |= PrintFlagSystemTheme;
+  } else if (!strcmp(arg, "standard-names")) {
+    opts->print |= PrintFlagStandardNames;
   } else if (!strcmp(arg, "app")) {
-    opts->print |= print_app;
+    opts->print |= PrintFlagAppTheme;
   } else if (!strcmp(arg, "now")) {
-    opts->print |= print_now;
+    opts->print |= PrintFlagNow;
   } else if (!strcmp(arg, "exec")) {
     if (argc == *argn + 1) {
       fprintf(stderr, "expected argument after '--exec'\n");
@@ -95,22 +186,31 @@ static int short_arg(int argc, char *argv[], int *argn, struct options *opts) {
       break;
 
     case 's':
-      opts->print |= print_sys;
+      opts->print |= PrintFlagSystemTheme;
+      break;
+
+    case 'S':
+      opts->print |= PrintFlagStandardNames;
       break;
 
     case 'a':
-      opts->print |= print_app;
+      opts->print |= PrintFlagAppTheme;
       break;
 
     case 'n':
-      opts->print |= print_now;
+      opts->print |= PrintFlagNow;
       break;
 
     case 'x':
       if (argv[*argn][i+1]) {
         set_exec(&argv[*argn][i+1], opts);
+        return 0;
       } else if (*argn + 1 < argc) {
         set_exec(argv[++*argn], opts);
+        return 0;
+      } else {
+        fputs("Expected argument after -x", stderr);
+        return 1;
       }
       break;
     }
@@ -147,10 +247,14 @@ int main(int argc, char *argv[]) {
   }
 
   if (opts.listen) {
-    return listen_for_theme_change(print_theme_name);
-  } else if (opts.print & print_now) {
-    int flags = get_theme_flags() & ThemeFlagSystemMask;
-    print_theme_name(flags == ThemeFlagSystemDark ? "dark" : "light", 0);
+    return listen_for_theme_change(print_theme_name, &opts);
+  } else {
+    int flags = get_theme_flags();
+    if (!(opts.print & (PrintFlagSystemTheme | PrintFlagAppTheme))) {
+      opts.print |= PrintFlagAppTheme;
+    }
+    opts.print |= PrintFlagStandardNames;
+    print_theme_name(NULL, flags, &opts);
   }
 
   for (int i = 0; i < opts.argc; ++i) {
