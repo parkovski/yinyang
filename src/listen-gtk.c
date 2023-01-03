@@ -28,6 +28,7 @@ static void theme_changed_callback(GSettings *settings, gchar *key,
   char *color_scheme = g_settings_get_string(settings, "color-scheme");
   unsigned flags = get_color_scheme_flags(color_scheme);
   cbdata->callback(color_scheme, flags, cbdata->opts);
+  free(color_scheme);
 }
 
 static gboolean handle_sigint(void *data) {
@@ -37,8 +38,10 @@ static gboolean handle_sigint(void *data) {
 
 static void on_activate(GtkApplication *app, void *data) {
   g_unix_signal_add(SIGINT, handle_sigint, G_APPLICATION(app));
+
   callback_data *cbdata = (callback_data*)data;
   cbdata->settings = g_settings_new("org.gnome.desktop.interface");
+
   // Check the property once so change events will be emitted.
   char *color_scheme = g_settings_get_string(cbdata->settings, "color-scheme");
   if (color_scheme == NULL) {
@@ -47,6 +50,8 @@ static void on_activate(GtkApplication *app, void *data) {
   }
   unsigned flags = get_color_scheme_flags(color_scheme);
   cbdata->callback(color_scheme, flags | ThemeFlagInitialValue, cbdata->opts);
+  free(color_scheme);
+
   g_signal_connect(cbdata->settings, "changed::color-scheme",
                    G_CALLBACK(theme_changed_callback), data);
 }
@@ -59,6 +64,7 @@ unsigned get_theme_flags() {
   GSettings *settings = g_settings_new("org.gnome.desktop.interface");
   gchar *color_scheme = g_settings_get_string(settings, "color-scheme");
   unsigned flags = get_color_scheme_flags(color_scheme);
+  free(color_scheme);
   g_object_unref(settings);
   return flags;
 }
