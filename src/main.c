@@ -12,11 +12,12 @@ static void show_help() {
           "  -s | --system   Print the system theme.\n"
           "  -a | --app      Print the app theme.\n"
           "  -S | --system-names  Use system-specific names instead of"
-                                  " standard 'dark' / 'light'.\n"
+                                 " 'dark' / 'light'.\n"
           "  -x | --exec     Run a command when a theme change occurs."
-                            " Separate arguments with ',': '-xfoo,bar'."
-                            " Arguments $sys and $app are substituted with"
-                            " the corresponding theme name.\n\n"
+                            " Separate arguments with ',': '-xfoo,bar'.\n"
+          "                  Arguments $sys_theme and $app_theme are"
+                            " substituted with the corresponding theme name.\n"
+          "\n"
           "If no options are specified, the default behavior is as if the"
           " arguments '-n' and '-a' were passed.\n");
 }
