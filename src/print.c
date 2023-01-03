@@ -6,6 +6,10 @@ void print_theme_name(const char *name, unsigned flags, struct options *opts) {
     return;
   }
 
+  if (name == NULL) {
+    opts->print &= ~PrintFlagSystemNames;
+  }
+
   if (opts->argc) {
     fputs("TODO: ", stdout);
     for (int i = 0; i < opts->argc; ++i) {
@@ -18,16 +22,16 @@ void print_theme_name(const char *name, unsigned flags, struct options *opts) {
   switch (opts->print & (PrintFlagAppTheme | PrintFlagSystemTheme)) {
   case PrintFlagAppTheme:
     if (flags & ThemeFlagAppDark) {
-      if (opts->print & PrintFlagStandardNames) {
-        puts("dark");
-      } else {
+      if (opts->print & PrintFlagSystemNames) {
         puts(name);
+      } else {
+        puts("dark");
       }
     } else if (flags & ThemeFlagAppLight) {
-      if (opts->print & PrintFlagStandardNames) {
-        puts("light");
-      } else {
+      if (opts->print & PrintFlagSystemNames) {
         puts(name);
+      } else {
+        puts("light");
       }
 #ifndef NDEBUG
     } else {
@@ -38,16 +42,16 @@ void print_theme_name(const char *name, unsigned flags, struct options *opts) {
 
   case PrintFlagSystemTheme:
     if (flags & ThemeFlagSystemDark) {
-      if (opts->print & PrintFlagStandardNames) {
-        puts("dark");
-      } else {
+      if (opts->print & PrintFlagSystemNames) {
         puts(name);
+      } else {
+        puts("dark");
       }
     } else if (flags & ThemeFlagSystemLight) {
-      if (opts->print & PrintFlagStandardNames) {
-        puts("light");
-      } else {
+      if (opts->print & PrintFlagSystemNames) {
         puts(name);
+      } else {
+        puts("light");
       }
 #ifndef NDEBUG
     } else {
@@ -58,34 +62,34 @@ void print_theme_name(const char *name, unsigned flags, struct options *opts) {
 
   default: // Both flags
     if (flags & ThemeFlagSystemDark) {
-      if (opts->print & PrintFlagStandardNames) {
-        puts("sys:dark");
-      } else {
+      if (opts->print & PrintFlagSystemNames) {
         printf("sys:%s\n", name);
+      } else {
+        puts("sys:dark");
       }
     } else if (flags & ThemeFlagSystemLight) {
-      if (opts->print & PrintFlagStandardNames) {
-        puts("sys:light");
-      } else {
+      if (opts->print & PrintFlagSystemNames) {
         printf("sys:%s\n", name);
+      } else {
+        puts("sys:light");
       }
 #ifndef NDEBUG
     } else {
-      fprintf(stderr, "App theme flag not present.\n");
+      fprintf(stderr, "System theme flag not present.\n");
 #endif
     }
 
     if (flags & ThemeFlagAppDark) {
-      if (opts->print & PrintFlagStandardNames) {
-        puts("app:dark");
-      } else {
+      if (opts->print & PrintFlagSystemNames) {
         printf("app:%s\n", name);
+      } else {
+        puts("app:dark");
       }
     } else if (flags & ThemeFlagAppLight) {
-      if (opts->print & PrintFlagStandardNames) {
-        puts("app:light");
-      } else {
+      if (opts->print & PrintFlagSystemNames) {
         printf("app:%s\n", name);
+      } else {
+        puts("app:light");
       }
 #ifndef NDEBUG
     } else {

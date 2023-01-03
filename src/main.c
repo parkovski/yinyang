@@ -11,13 +11,13 @@ static void show_help() {
           "  -l | --listen   Listen for system theme changes.\n"
           "  -s | --system   Print the system theme.\n"
           "  -a | --app      Print the app theme.\n"
-          "  -S | --standard-names   Use standard names 'dark'/'light'"
-                                    " instead of system specific names.\n"
+          "  -S | --system-names  Use system-specific names instead of"
+                                  " standard 'dark' / 'light'.\n"
           "  -x | --exec     Run a command when a theme change occurs."
                             " Arguments $system and $app are substituted with"
                             " the theme name.\n\n"
           "If no options are specified, the default behavior is as if the"
-          " arguments '-n', '-a', and '-S' were passed.\n");
+          " arguments '-n' and '-a' were passed.\n");
 }
 
 static void set_exec(const char *cmd, struct options *opts) {
@@ -42,8 +42,8 @@ static int long_arg(int argc, char *argv[], int *argn, struct options *opts) {
     opts->listen = 1;
   } else if (!strcmp(arg, "system")) {
     opts->print |= PrintFlagSystemTheme;
-  } else if (!strcmp(arg, "standard-names")) {
-    opts->print |= PrintFlagStandardNames;
+  } else if (!strcmp(arg, "system-names")) {
+    opts->print |= PrintFlagSystemNames;
   } else if (!strcmp(arg, "app")) {
     opts->print |= PrintFlagAppTheme;
   } else if (!strcmp(arg, "now")) {
@@ -94,7 +94,7 @@ static int short_arg(int argc, char *argv[], int *argn, struct options *opts) {
       break;
 
     case 'S':
-      opts->print |= PrintFlagStandardNames;
+      opts->print |= PrintFlagSystemNames;
       break;
 
     case 'a':
@@ -157,7 +157,6 @@ int main(int argc, char *argv[]) {
     if (!(opts.print & (PrintFlagSystemTheme | PrintFlagAppTheme))) {
       opts.print |= PrintFlagAppTheme;
     }
-    opts.print |= PrintFlagStandardNames;
     print_theme_name(NULL, flags, &opts);
   }
 

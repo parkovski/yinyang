@@ -18,10 +18,10 @@ enum ThemeFlags {
 };
 
 enum PrintFlags {
-  PrintFlagSystemTheme   = 0x1,
-  PrintFlagAppTheme      = 0x2,
-  PrintFlagNow           = 0x4,
-  PrintFlagStandardNames = 0x8,
+  PrintFlagSystemTheme = 0x1,
+  PrintFlagAppTheme    = 0x2,
+  PrintFlagNow         = 0x4,
+  PrintFlagSystemNames = 0x8,
 };
 
 struct options {
