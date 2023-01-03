@@ -27,8 +27,8 @@ static void theme_changed_callback(GSettings *settings, gchar *key,
   callback_data *cbdata = data;
   char *color_scheme = g_settings_get_string(settings, "color-scheme");
   unsigned flags = get_color_scheme_flags(color_scheme);
-  cbdata->callback(color_scheme, flags, cbdata->opts);
   free(color_scheme);
+  cbdata->callback(flags, cbdata->opts);
 }
 
 static gboolean handle_sigint(void *data) {
@@ -49,8 +49,8 @@ static void on_activate(GtkApplication *app, void *data) {
     return;
   }
   unsigned flags = get_color_scheme_flags(color_scheme);
-  cbdata->callback(color_scheme, flags | ThemeFlagInitialValue, cbdata->opts);
   free(color_scheme);
+  cbdata->callback(flags | ThemeFlagInitialValue, cbdata->opts);
 
   g_signal_connect(cbdata->settings, "changed::color-scheme",
                    G_CALLBACK(theme_changed_callback), data);
@@ -67,6 +67,13 @@ unsigned get_theme_flags() {
   free(color_scheme);
   g_object_unref(settings);
   return flags;
+}
+
+const char *get_system_theme_name(bool isdark) {
+  if (isdark) {
+    return "prefer-dark";
+  }
+  return "default";
 }
 
 int listen_for_theme_change(ThemeChangedCallback callback,

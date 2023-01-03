@@ -1,6 +1,6 @@
 set(SOURCES
   main.c
-  print.c
+  theme-changed.c
 )
 
 add_executable(yinyang ${SOURCES})

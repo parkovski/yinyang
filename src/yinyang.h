@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdbool.h>
+
 // For strndup
 #ifdef __STDC_ALLOC_LIB__
 # define __STDC_WANT_LIB_EXT2__ 1
@@ -32,13 +34,12 @@ struct options {
   char **argv;
 };
 
-typedef void (*ThemeChangedCallback)(const char *name, unsigned flags,
-                                     struct options *opts);
+typedef void (*ThemeChangedCallback)(unsigned flags, struct options *opts);
+void theme_changed(unsigned flags, struct options *opts);
 
 unsigned get_theme_flags();
+const char *get_system_theme_name(bool isdark);
 int listen_for_theme_change(ThemeChangedCallback callback,
                             struct options *opts);
-
-void print_theme_name(const char *name, unsigned flags, struct options *opts);
 
 int yy_exec(char *const *argv);

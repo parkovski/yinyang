@@ -14,13 +14,14 @@ static void show_help() {
           "  -S | --system-names  Use system-specific names instead of"
                                   " standard 'dark' / 'light'.\n"
           "  -x | --exec     Run a command when a theme change occurs."
-                            " Arguments $system and $app are substituted with"
-                            " the theme name.\n\n"
+                            " Separate arguments with ',': '-xfoo,bar'."
+                            " Arguments $sys and $app are substituted with"
+                            " the corresponding theme name.\n\n"
           "If no options are specified, the default behavior is as if the"
           " arguments '-n' and '-a' were passed.\n");
 }
 
-static void set_exec(const char *cmd, struct options *opts) {
+static void push_exec_arg(const char *arg, size_t len, struct options *opts) {
   if (opts->argc == opts->argcap) {
     if (opts->argcap < 8) {
       opts->argcap = 8;
@@ -29,7 +30,24 @@ static void set_exec(const char *cmd, struct options *opts) {
     }
     opts->argv = realloc(opts->argv, opts->argcap * sizeof(char*));
   }
-  opts->argv[opts->argc++] = strndup(cmd, 1023);
+  opts->argv[opts->argc++] = strndup(arg, len);
+}
+
+static void set_exec(const char *cmd, struct options *opts) {
+  const char *arg = cmd;
+  size_t ofs = 0;
+  while (1) {
+    if (arg[ofs] == 0) {
+      push_exec_arg(arg, ofs, opts);
+      break;
+    } else if (arg[ofs] == ',') {
+      push_exec_arg(arg, ofs, opts);
+      arg = arg + ofs + 1;
+      ofs = 0;
+    } else {
+      ++ofs;
+    }
+  }
 }
 
 static int long_arg(int argc, char *argv[], int *argn, struct options *opts) {
@@ -151,13 +169,13 @@ int main(int argc, char *argv[]) {
   }
 
   if (opts.listen) {
-    return listen_for_theme_change(print_theme_name, &opts);
+    return listen_for_theme_change(theme_changed, &opts);
   } else {
     int flags = get_theme_flags();
     if (!(opts.print & (PrintFlagSystemTheme | PrintFlagAppTheme))) {
       opts.print |= PrintFlagAppTheme;
     }
-    print_theme_name(NULL, flags, &opts);
+    theme_changed(flags, &opts);
   }
 
   for (int i = 0; i < opts.argc; ++i) {

@@ -41,7 +41,6 @@ static unsigned get_NSAppearance_flags(NSAppearance *appearance) {
                         change:(nullable NSDictionary<NSString *,id> *)change
                        context:(nullable void *)context {
   NSAppearance *appearance = [(NSApplication *)object effectiveAppearance];
-  const char *name = [appearance name].UTF8String;
   unsigned flags = get_NSAppearance_flags(appearance);
 
   if (!self->seenInitial) {
@@ -49,7 +48,7 @@ static unsigned get_NSAppearance_flags(NSAppearance *appearance) {
     flags |= ThemeFlagInitialValue;
   }
 
-  ((ThemeChangedCallback)context)(name, flags, self->opts);
+  ((ThemeChangedCallback)context)(flags, self->opts);
 }
 @end
 
@@ -61,6 +60,13 @@ unsigned get_theme_flags() {
   return get_NSAppearance_flags(
     [[NSApplication sharedApplication] effectiveAppearance]
   );
+}
+
+const char *get_system_theme_name(bool isdark) {
+  if (isdark) {
+    return NSAppearanceNameDarkAqua.UTF8String;
+  }
+  return NSAppearanceNameAqua.UTF8String;
 }
 
 int listen_for_theme_change(ThemeChangedCallback callback,
