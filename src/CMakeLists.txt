@@ -1,5 +1,6 @@
 set(SOURCES
   main.c
+  print.c
 )
 
 add_executable(yinyang ${SOURCES})
