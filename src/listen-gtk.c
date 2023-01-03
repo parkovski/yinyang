@@ -1,6 +1,7 @@
 #include "yinyang.h"
 #include <gtk/gtk.h>
 #include <gio/gio.h>
+#include <glib-unix.h>
 
 // Private API {{{
 
@@ -21,14 +22,21 @@ static unsigned get_color_scheme_flags(gchar *color_scheme) {
   return ThemeFlagAppLight;
 }
 
-static void theme_changed_callback(GObject *object, void *data) {
+static void theme_changed_callback(GSettings *settings, gchar *key,
+                                   void *data) {
   callback_data *cbdata = data;
-  char *color_scheme = g_settings_get_string(cbdata->settings, "color-scheme");
+  char *color_scheme = g_settings_get_string(settings, "color-scheme");
   unsigned flags = get_color_scheme_flags(color_scheme);
   cbdata->callback(color_scheme, flags, cbdata->opts);
 }
 
+static gboolean handle_sigint(void *data) {
+  g_application_release((GApplication*)data);
+  return true;
+}
+
 static void on_activate(GtkApplication *app, void *data) {
+  g_unix_signal_add(SIGINT, handle_sigint, G_APPLICATION(app));
   callback_data *cbdata = (callback_data*)data;
   cbdata->settings = g_settings_new("org.gnome.desktop.interface");
   // Check the property once so change events will be emitted.
@@ -66,11 +74,12 @@ int listen_for_theme_change(ThemeChangedCallback callback,
   };
   g_signal_connect(app, "activate", G_CALLBACK(on_activate), &data);
   char *argv[] = { "yinyang" };
+  g_application_hold(G_APPLICATION(app));
   int status = g_application_run(G_APPLICATION(app), 1, argv);
+  g_object_unref(app);
   if (data.settings) {
     g_object_unref(data.settings);
   }
-  g_object_unref(app);
   return status;
 }
 

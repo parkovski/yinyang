@@ -34,7 +34,7 @@ static void print_theme_name(const char *name, unsigned flags,
       }
 #ifndef NDEBUG
     } else {
-      fprintf(stderr, "App theme flag not present.");
+      fprintf(stderr, "App theme flag not present.\n");
 #endif
     }
     break;
@@ -54,7 +54,7 @@ static void print_theme_name(const char *name, unsigned flags,
       }
 #ifndef NDEBUG
     } else {
-      fprintf(stderr, "System theme flag not present.");
+      fprintf(stderr, "System theme flag not present.\n");
 #endif
     }
     break;
@@ -74,7 +74,7 @@ static void print_theme_name(const char *name, unsigned flags,
       }
 #ifndef NDEBUG
     } else {
-      fprintf(stderr, "App theme flag not present.");
+      fprintf(stderr, "App theme flag not present.\n");
 #endif
     }
 
@@ -92,7 +92,7 @@ static void print_theme_name(const char *name, unsigned flags,
       }
 #ifndef NDEBUG
     } else {
-      fprintf(stderr, "App theme flag not present.");
+      fprintf(stderr, "App theme flag not present.\n");
 #endif
     }
     break;
