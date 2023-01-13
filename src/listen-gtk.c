@@ -59,7 +59,7 @@ static void on_activate(GtkApplication *app, void *data) {
 
 // Public API {{{
 
-unsigned get_theme_flags() {
+static unsigned get_theme_flags() {
   GSettings *settings = g_settings_new("org.gnome.desktop.interface");
   gchar *color_scheme = g_settings_get_string(settings, "color-scheme");
   unsigned flags = get_color_scheme_flags(color_scheme);
@@ -68,14 +68,14 @@ unsigned get_theme_flags() {
   return flags;
 }
 
-const char *get_system_theme_name(bool isdark) {
+static const char *get_system_theme_name(bool isdark) {
   if (isdark) {
     return "prefer-dark";
   }
   return "default";
 }
 
-int listen_for_theme_change(struct options *opts) {
+static int listen_for_theme_change(struct options *opts) {
   GtkApplication *app
     = gtk_application_new("com.parkovski.yinyang", G_APPLICATION_NON_UNIQUE);
   callback_data data = (callback_data) {
@@ -92,5 +92,11 @@ int listen_for_theme_change(struct options *opts) {
   }
   return status;
 }
+
+struct env env_gtk = {
+  .get_theme_flags = get_theme_flags,
+  .get_system_theme_name = get_system_theme_name,
+  .listen_for_theme_change = listen_for_theme_change,
+};
 
 // }}}

@@ -26,19 +26,25 @@ enum PrintFlags {
   PrintFlagSystemNames = 0x8,
 };
 
+struct options;
+struct env {
+  unsigned (*get_theme_flags)();
+  const char *(*get_system_theme_name)(bool isdark);
+  int (*listen_for_theme_change)(struct options *opts);
+};
+
 struct options {
   int print;
   int listen;
   int argcap;
   int argc;
   char **argv;
+  struct env *env;
 };
 
 typedef void (*ThemeChangedCallback)(unsigned flags, struct options *opts);
 void theme_changed(unsigned flags, struct options *opts);
 
-unsigned get_theme_flags();
-const char *get_system_theme_name(bool isdark);
-int listen_for_theme_change(struct options *opts);
+struct env *get_env(const char *name);
 
 int yy_exec(char *const *argv);

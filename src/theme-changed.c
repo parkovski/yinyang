@@ -48,8 +48,8 @@ void theme_changed(unsigned flags, struct options *opts) {
 
   const char *sysname, *appname;
   if (opts->print & PrintFlagSystemNames) {
-    sysname = get_system_theme_name(flags & ThemeFlagSystemDark);
-    appname = get_system_theme_name(flags & ThemeFlagAppDark);
+    sysname = opts->env->get_system_theme_name(flags & ThemeFlagSystemDark);
+    appname = opts->env->get_system_theme_name(flags & ThemeFlagAppDark);
   } else {
     sysname = flags & ThemeFlagSystemDark ? "dark" : "light";
     appname = flags & ThemeFlagAppDark ? "dark" : "light";

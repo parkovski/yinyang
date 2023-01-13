@@ -13,6 +13,7 @@ static void show_help() {
           "  -a | --app      Print the app theme.\n"
           "  -S | --system-names  Use system-specific names instead of"
                                  " 'dark' / 'light'.\n"
+          "  -e | --env      Specify the desktop environment.\n"
           "  -x | --exec     Run a command when a theme change occurs."
                             " Separate arguments with ',': '-xfoo,bar'.\n"
           "                  Arguments $sys_theme and $app_theme are"
@@ -67,6 +68,24 @@ static int long_arg(int argc, char *argv[], int *argn, struct options *opts) {
     opts->print |= PrintFlagAppTheme;
   } else if (!strcmp(arg, "now")) {
     opts->print |= PrintFlagNow;
+  } else if (!strcmp(arg, "env")) {
+    if (argc == *argn + 1) {
+      fprintf(stderr, "expected argument after '--env'\n");
+      return 1;
+    }
+    if ((opts->env = get_env(argv[++*argn])) == NULL) {
+      fprintf(stderr, "unknown env '%s'\n", argv[*argn]);
+      return 1;
+    }
+  } else if (!strncmp(arg, "env=", 4)) {
+    if (arg[4] == 0) {
+      fprintf(stderr, "expected argument after '--env'\n");
+      return 1;
+    }
+    if ((opts->env = get_env(arg + 4)) == NULL) {
+      fprintf(stderr, "unknown env '%s'\n", arg + 4);
+      return 1;
+    }
   } else if (!strcmp(arg, "exec")) {
     if (argc == *argn + 1) {
       fprintf(stderr, "expected argument after '--exec'\n");
@@ -124,6 +143,23 @@ static int short_arg(int argc, char *argv[], int *argn, struct options *opts) {
       opts->print |= PrintFlagNow;
       break;
 
+    case 'e': {
+      char *envname;
+      if (argv[*argn][i+1]) {
+        envname = &argv[*argn][i+1];
+      } else if (*argn + 1 < argc) {
+        envname = argv[++*argn];
+      } else {
+        fputs("Expected argument after -e", stderr);
+        return 1;
+      }
+      if ((opts->env = get_env(envname)) == NULL) {
+        fprintf(stderr, "Unknown env '%s'\n", envname);
+        return 1;
+      }
+      return 0;
+    }
+
     case 'x':
       if (argv[*argn][i+1]) {
         set_exec(&argv[*argn][i+1], opts);
@@ -169,10 +205,14 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
+  if (opts.env == NULL) {
+    opts.env = get_env(NULL);
+  }
+
   if (opts.listen) {
-    return listen_for_theme_change(&opts);
+    return opts.env->listen_for_theme_change(&opts);
   } else {
-    int flags = get_theme_flags();
+    int flags = opts.env->get_theme_flags();
     if (!(opts.print & (PrintFlagSystemTheme | PrintFlagAppTheme))) {
       opts.print |= PrintFlagAppTheme;
     }

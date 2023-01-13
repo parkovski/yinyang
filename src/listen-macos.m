@@ -56,20 +56,20 @@ static unsigned get_NSAppearance_flags(NSAppearance *appearance) {
 
 // Public API {{{
 
-unsigned get_theme_flags() {
+static unsigned get_theme_flags() {
   return get_NSAppearance_flags(
     [[NSApplication sharedApplication] effectiveAppearance]
   );
 }
 
-const char *get_system_theme_name(bool isdark) {
+static const char *get_system_theme_name(bool isdark) {
   if (isdark) {
     return NSAppearanceNameDarkAqua.UTF8String;
   }
   return NSAppearanceNameAqua.UTF8String;
 }
 
-int listen_for_theme_change(struct options *opts) {
+static int listen_for_theme_change(struct options *opts) {
   NSApplication *app = [NSApplication sharedApplication];
   YYAppearanceObserver *observer = [YYAppearanceObserver newWithOptions:opts];
   [app addObserver:observer
@@ -78,6 +78,20 @@ int listen_for_theme_change(struct options *opts) {
            context:nil];
   [app run];
   return 0;
+}
+
+struct env env_macos = {
+  .get_theme_flags = get_theme_flags,
+  .get_system_theme_name = get_system_theme_name,
+  .listen_for_theme_change = listen_for_theme_change,
+};
+
+struct env *get_env(const char *name) {
+  if (name == NULL || !strcmp(name, "macos") || !strcmp(name, "macOS")
+   || !strcmp(name, "aqua") || !strcmp(name, "Aqua")) {
+    return &env_macos;
+  }
+  return NULL;
 }
 
 // }}}
