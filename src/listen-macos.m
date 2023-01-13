@@ -48,7 +48,7 @@ static unsigned get_NSAppearance_flags(NSAppearance *appearance) {
     flags |= ThemeFlagInitialValue;
   }
 
-  ((ThemeChangedCallback)context)(flags, self->opts);
+  theme_changed(flags, self->opts);
 }
 @end
 
@@ -69,14 +69,13 @@ const char *get_system_theme_name(bool isdark) {
   return NSAppearanceNameAqua.UTF8String;
 }
 
-int listen_for_theme_change(ThemeChangedCallback callback,
-                            struct options *opts) {
+int listen_for_theme_change(struct options *opts) {
   NSApplication *app = [NSApplication sharedApplication];
   YYAppearanceObserver *observer = [YYAppearanceObserver newWithOptions:opts];
   [app addObserver:observer
         forKeyPath:@"effectiveAppearance"
            options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionInitial
-           context:callback];
+           context:nil];
   [app run];
   return 0;
 }

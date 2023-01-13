@@ -39,7 +39,6 @@ void theme_changed(unsigned flags, struct options *opts);
 
 unsigned get_theme_flags();
 const char *get_system_theme_name(bool isdark);
-int listen_for_theme_change(ThemeChangedCallback callback,
-                            struct options *opts);
+int listen_for_theme_change(struct options *opts);
 
 int yy_exec(char *const *argv);

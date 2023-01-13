@@ -170,7 +170,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (opts.listen) {
-    return listen_for_theme_change(theme_changed, &opts);
+    return listen_for_theme_change(&opts);
   } else {
     int flags = get_theme_flags();
     if (!(opts.print & (PrintFlagSystemTheme | PrintFlagAppTheme))) {

@@ -6,7 +6,6 @@
 // Private API {{{
 
 typedef struct {
-  ThemeChangedCallback callback;
   struct options *opts;
   GSettings *settings;
 } callback_data;
@@ -28,7 +27,7 @@ static void theme_changed_callback(GSettings *settings, gchar *key,
   char *color_scheme = g_settings_get_string(settings, "color-scheme");
   unsigned flags = get_color_scheme_flags(color_scheme);
   free(color_scheme);
-  cbdata->callback(flags, cbdata->opts);
+  theme_changed(flags, cbdata->opts);
 }
 
 static gboolean handle_sigint(void *data) {
@@ -50,7 +49,7 @@ static void on_activate(GtkApplication *app, void *data) {
   }
   unsigned flags = get_color_scheme_flags(color_scheme);
   free(color_scheme);
-  cbdata->callback(flags | ThemeFlagInitialValue, cbdata->opts);
+  theme_changed(flags | ThemeFlagInitialValue, cbdata->opts);
 
   g_signal_connect(cbdata->settings, "changed::color-scheme",
                    G_CALLBACK(theme_changed_callback), data);
@@ -76,12 +75,10 @@ const char *get_system_theme_name(bool isdark) {
   return "default";
 }
 
-int listen_for_theme_change(ThemeChangedCallback callback,
-                            struct options *opts) {
+int listen_for_theme_change(struct options *opts) {
   GtkApplication *app
     = gtk_application_new("com.parkovski.yinyang", G_APPLICATION_NON_UNIQUE);
   callback_data data = (callback_data) {
-    .callback = callback,
     .opts = opts,
     .settings = NULL,
   };
