@@ -13,7 +13,9 @@ static void show_help() {
           "  -a | --app      Print the app theme.\n"
           "  -S | --system-names  Use system-specific names instead of"
                                  " 'dark' / 'light'.\n"
-          "  -e | --env      Specify the desktop environment.\n"
+#if defined(YY_HAS_GTK) && defined(YY_HAS_KDE)
+          "  -e | --env      Specify the desktop environment (GNOME, KDE).\n"
+#endif
           "  -x | --exec     Run a command when a theme change occurs."
                             " Separate arguments with ',': '-xfoo,bar'.\n"
           "                  Arguments $sys_theme and $app_theme are"

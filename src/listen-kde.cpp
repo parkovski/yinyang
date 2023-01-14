@@ -1,26 +1,37 @@
-extern "C" {
-#include "yinyang.h"
-}
+#include "listen-kde.h"
 
 #include <QCoreApplication>
 #include <KConfig>
 #include <KConfigGroup>
+#include <KConfigWatcher>
 #include <memory>
 
 // Private API {{{
 
+static unsigned get_theme_flags();
 
+ConfigChanged::ConfigChanged(struct options *opts)
+  : _opts{opts}
+{}
+
+ConfigChanged::~ConfigChanged() {}
+
+void ConfigChanged::configChanged(const KConfigGroup &group, const QByteArrayList &names) {
+  if (group.name() == "General" && names.contains("ColorScheme")) {
+    theme_changed(get_theme_flags(), _opts);
+  }
+}
 
 // }}}
 
 // Public API {{{
 
+static int argc = 1;
+static char *argv[] = { const_cast<char*>("yinyang") };
 static QCoreApplication *app = nullptr;
 
 static unsigned get_theme_flags() {
   std::unique_ptr<QCoreApplication> local_app = nullptr;
-  int argc = 1;
-  char *argv[] = { const_cast<char*>("yinyang") };
   if (!app) {
     local_app = std::make_unique<QCoreApplication>(argc, argv);
   }
@@ -41,7 +52,20 @@ static const char *get_system_theme_name(bool isdark) {
 }
 
 static int listen_for_theme_change(struct options *opts) {
-  return 0;
+  QCoreApplication _app{argc, argv};
+  app = &_app;
+
+  if (opts->print & PrintFlagNow) {
+    theme_changed(get_theme_flags() | ThemeFlagInitialValue, opts);
+  }
+
+  ConfigChanged conf{opts};
+  auto watcher = KConfigWatcher::create(KSharedConfig::openConfig());
+  bool b = QObject::connect(
+    watcher.data(), SIGNAL(configChanged(const KConfigGroup&, const QByteArrayList&)),
+    &conf, SLOT(configChanged(const KConfigGroup&, const QByteArrayList&))
+  );
+  return _app.exec();
 }
 
 extern "C" struct env env_kde;
