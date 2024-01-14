@@ -4,6 +4,8 @@
 
 int yy_exec(char *const *argv) {
   int pid;
-  posix_spawnp(&pid, argv[0], NULL, NULL, argv, NULL);
+  if (posix_spawnp(&pid, argv[0], NULL, NULL, argv, NULL) != 0) {
+    return 0;
+  }
   return pid;
 }
