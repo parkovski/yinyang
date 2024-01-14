@@ -27,8 +27,6 @@ int yy_exec(char *const *argv) {
   }
   args[offset - 1] = 0;
 
-  printf("args: %s\n", args);
-
   STARTUPINFO si;
   memset(&si, 0, sizeof(STARTUPINFO));
   si.cb = sizeof(STARTUPINFO);
