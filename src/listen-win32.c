@@ -32,7 +32,7 @@ static unsigned get_theme_flags() {
 }
 
 static const char *get_system_theme_name(bool isdark) {
-  return is_dark_mode() ? "dark" : "light";
+  return is_dark_mode() ? "Dark" : "Light";
 }
 
 static struct options *g_opts;
@@ -68,6 +68,9 @@ static int listen_for_theme_change(struct options *opts) {
 
   ShowWindow(hWnd, SW_HIDE);
   UpdateWindow(hWnd);
+
+  unsigned flags = get_theme_flags();
+  theme_changed(flags | ThemeFlagInitialValue, opts);
 
   MSG msg;
   while (GetMessage(&msg, NULL, 0, 0)) {
