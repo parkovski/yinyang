@@ -34,7 +34,14 @@ static void push_exec_arg(const char *arg, size_t len, struct options *opts) {
     }
     opts->argv = realloc(opts->argv, opts->argcap * sizeof(char*));
   }
+#if UNIX
   opts->argv[opts->argc++] = strndup(arg, len);
+#else
+  opts->argv[opts->argc] = malloc(len + 1);
+  memcpy(opts->argv[opts->argc], arg, len);
+  opts->argv[opts->argc][len] = 0;
+  ++opts->argc;
+#endif
 }
 
 static void set_exec(const char *cmd, struct options *opts) {

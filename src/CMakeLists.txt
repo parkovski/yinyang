@@ -36,7 +36,5 @@ if(UNIX)
     endif()
   endif()
 elseif(WIN32)
-  #target_sources(yinyang PRIVATE exec-win32.c listen-win32.c)
-  message(FATAL_ERROR "Not supported yet.")
+  target_sources(yinyang PRIVATE exec-win32.c listen-win32.c)
 endif()
-
