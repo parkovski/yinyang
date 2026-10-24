@@ -56,9 +56,26 @@ static struct options *g_opts;
 
 static LRESULT CALLBACK
 WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+  static int isdark = -1;
+  unsigned flags;
+
   switch (message) {
   case WM_SETTINGCHANGE:
     if (!strcmp((LPSTR)lParam, "ImmersiveColorSet")) {
+      flags =  get_theme_flags();
+      // Ignore duplicates
+      if (flags & ThemeFlagSystemDark) {
+        if (isdark == 1) {
+          break;
+        }
+        isdark = 1;;
+      }
+      if (flags & ThemeFlagSystemLight) {
+        if (isdark == 0) {
+          break;
+        }
+        isdark = 0;
+      }
       theme_changed(get_theme_flags(), g_opts);
     }
     break;
