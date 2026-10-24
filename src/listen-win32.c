@@ -1,38 +1,55 @@
 #include "yinyang.h"
 #include <Windows.h>
-#include <stdio.h>
 
-static BOOL is_dark_mode() {
+static void is_dark_mode(BOOL *system, BOOL *apps) {
   static HANDLE uxtheme_dll = NULL;
   if (uxtheme_dll == NULL) {
     uxtheme_dll = LoadLibraryW(L"uxtheme.dll");
     if (!uxtheme_dll) {
-      return FALSE;
+      *system = *apps = FALSE;
+      return;
     }
   }
 
   BOOL (WINAPI *pShouldSystemUseDarkMode)() =
     (BOOL (WINAPI *)())GetProcAddress(uxtheme_dll, MAKEINTRESOURCEA(138));
-  if (!pShouldSystemUseDarkMode) {
-    return FALSE;
-  }
+  // This API seems to always return false. I wish they'd document this stuff.
+  // BOOL (WINAPI *pShouldAppsUseDarkMode)() =
+  //   (BOOL (WINAPI *)())GetProcAddress(uxtheme_dll, MAKEINTRESOURCEA(132));
 
-  if (pShouldSystemUseDarkMode()) {
-    return TRUE;
+  if (!pShouldSystemUseDarkMode) {
+    *system = FALSE;
+  } else {
+    *system = pShouldSystemUseDarkMode();
   }
-  return FALSE;
+  *apps = *system;
+
+  // if (!pShouldAppsUseDarkMode) {
+  //   *apps = FALSE;
+  // } else {
+  //   *apps = pShouldAppsUseDarkMode();
+  // }
 }
 
 static unsigned get_theme_flags() {
-  if (is_dark_mode()) {
-    return ThemeFlagSystemDark | ThemeFlagAppDark;
+  BOOL system, apps;
+  is_dark_mode(&system, &apps);
+  unsigned flags = 0;
+  if (system) {
+    flags |= ThemeFlagSystemDark;
   } else {
-    return ThemeFlagSystemLight | ThemeFlagAppLight;
+    flags |= ThemeFlagSystemLight;
   }
+  if (apps) {
+    flags |= ThemeFlagAppDark;
+  } else {
+    flags |= ThemeFlagAppLight;
+  }
+  return flags;
 }
 
 static const char *get_system_theme_name(bool isdark) {
-  return is_dark_mode() ? "Dark" : "Light";
+  return isdark ? "Dark" : "Light";
 }
 
 static struct options *g_opts;
