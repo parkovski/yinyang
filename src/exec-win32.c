@@ -30,12 +30,17 @@ int yy_exec(char *const *argv) {
   STARTUPINFO si;
   memset(&si, 0, sizeof(STARTUPINFO));
   si.cb = sizeof(STARTUPINFO);
+  si.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
+  si.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
+  si.hStdError = GetStdHandle(STD_ERROR_HANDLE);
   PROCESS_INFORMATION pi;
   if (CreateProcessA(
       NULL, args, NULL, NULL, TRUE, NORMAL_PRIORITY_CLASS, NULL, NULL,
       &si, &pi) == 0) {
     pi.dwProcessId = 0;
   }
+  CloseHandle(pi.hThread);
+  CloseHandle(pi.hProcess);
   free(args);
   return pi.dwProcessId;
 }
