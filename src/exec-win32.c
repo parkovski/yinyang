@@ -1,31 +1,43 @@
 #include <Windows.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 int yy_exec(char *const *argv) {
-  size_t argsize = 2;
-  for (int i = 0; argv[i]; ++i) {
-    argsize += strlen(argv[i]) + 1;
+  size_t argsize = 0;
+  bool *hasspace;
+  int i, j, k;
+  for (i = 0; argv[i]; ++i) {
+  }
+  hasspace = malloc(sizeof(bool) * i);
+  for (i = 0; argv[i]; ++i) {
+    hasspace[i] = false;
+    for (j = 0; argv[i][j]; ++j) {
+      ++argsize;
+      if (argv[i][j] == ' ' || argv[i][j] == '\t') {
+        hasspace[i] = true;
+      }
+    }
+    if (hasspace[i]) argsize += 2;
+    ++argsize;
   }
   char *args = malloc(argsize);
 
-  size_t offset = 1;
-  args[0] = '"';
-  size_t length = strlen(argv[0]);
-  memcpy(args + 1, argv[0], length);
-  offset += length;
-  args[offset] = '"';
-  ++offset;
-  args[offset] = ' ';
-  ++offset;
-
-  for (int i = 1; argv[i]; ++i) {
-    length = strlen(argv[i]);
-    memcpy(args + offset, argv[i], length);
-    offset += length;
-    args[offset] = ' ';
-    ++offset;
+  k = 0;
+  for (i = 0; argv[i]; ++i) {
+    if (hasspace[i] && argv[i][0] != '\"') {
+      args[k++] = '"';
+    }
+    j = 0;
+    for (; argv[i][j]; ++j, ++k) {
+      args[k] = argv[i][j];
+    }
+    if (hasspace[i] && argv[i][0] != '\"') {
+      args[k++] = '"';
+    }
+    args[k++] = ' ';
   }
-  args[offset - 1] = 0;
+  args[k - 1] = '\0';
+  free(hasspace);
 
   STARTUPINFO si;
   memset(&si, 0, sizeof(STARTUPINFO));
