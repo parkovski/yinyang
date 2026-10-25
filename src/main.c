@@ -234,3 +234,27 @@ int main(int argc, char *argv[]) {
   free(opts.argv);
   return 0;
 }
+
+#ifdef _WIN32
+#include <Windows.h>
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
+                   LPSTR lpCmdLine, int nShowCmd) {
+  LPWSTR commandLine = GetCommandLineW();
+  int argc;
+  LPWSTR *argvw = CommandLineToArgvW(commandLine, &argc);
+  LPSTR *argv = malloc(sizeof(LPSTR) * argc);
+  for (int i = 0; i < argc; ++i) {
+    int size = WideCharToMultiByte(CP_UTF8, 0, argvw[i], -1, NULL, 0, NULL,
+                                   NULL);
+    argv[i] = malloc(size + 1);
+    WideCharToMultiByte(CP_UTF8, 0, argvw[i], -1, argv[i], size, NULL, NULL);
+  }
+  LocalFree(argvw);
+  int ret = main(argc, argv);
+  for (int i = 0; i < argc; ++i) {
+    free(argv[i]);
+  }
+  free(argv);
+  return ret;
+}
+#endif
