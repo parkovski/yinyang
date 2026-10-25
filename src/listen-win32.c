@@ -68,7 +68,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
         if (isdark == 1) {
           break;
         }
-        isdark = 1;;
+        isdark = 1;
       }
       if (flags & ThemeFlagSystemLight) {
         if (isdark == 0) {
@@ -76,7 +76,7 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
         }
         isdark = 0;
       }
-      theme_changed(get_theme_flags(), g_opts);
+      theme_changed(flags, g_opts);
     }
     break;
   }
