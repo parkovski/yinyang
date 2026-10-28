@@ -1,5 +1,6 @@
 #include "yinyang.h"
 #include <Windows.h>
+#include <winuser.h>
 
 static void is_dark_mode(BOOL *system, BOOL *apps) {
   static HANDLE uxtheme_dll = NULL;
@@ -79,6 +80,12 @@ WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
       theme_changed(flags, g_opts);
     }
     break;
+
+  case WM_POWERBROADCAST:
+    if (wParam == PBT_APMSUSPEND) {
+      return 0;
+    }
+  break;
   }
   return DefWindowProc(hWnd, message, wParam, lParam);
 }
